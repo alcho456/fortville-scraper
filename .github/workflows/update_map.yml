@@ -28,13 +28,20 @@ jobs:
         run: |
           echo "$YOUTUBE_COOKIES" | base64 --decode > YOUTUBE_COOKIES.txt
 
+      - name: Verify cookies file
+        run: |
+          if [ ! -s YOUTUBE_COOKIES.txt ]; then
+            echo "Error: YOUTUBE_COOKIES.txt is empty or missing."
+            exit 1
+          fi
+
       - name: Run YouTube Scraper
         run: |
-          python youtube_meeting_map.py
+          python youtube_meeting_map.py || exit 1
         env:
-          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}  # Make sure your API key is set as a secret
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
           YOUTUBE_COOKIES: ${{ secrets.YOUTUBE_COOKIES }}
 
       - name: Clean up
         run: |
-          rm YOUTUBE_COOKIES.txt  # Optional: Clean up after the job finishes
+          rm YOUTUBE_COOKIES.txt
