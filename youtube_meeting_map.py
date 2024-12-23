@@ -2,6 +2,8 @@ import os
 import re
 import folium
 from googlemaps import Client as GoogleMaps
+from pytube import Channel
+
 
 def extract_meeting_details(title):
     """
@@ -14,6 +16,7 @@ def extract_meeting_details(title):
         date, meeting_type = match.groups()
         return date, meeting_type
     return None, None
+
 
 def group_videos_with_short_addresses(video_details, base_file_url):
     """
@@ -43,6 +46,7 @@ def group_videos_with_short_addresses(video_details, base_file_url):
 
     return address_dict
 
+
 def save_descriptions_to_files(video_details, output_dir="descriptions"):
     """Save video descriptions to text files."""
     os.makedirs(output_dir, exist_ok=True)
@@ -52,6 +56,7 @@ def save_descriptions_to_files(video_details, output_dir="descriptions"):
         with open(file_path, "w", encoding="utf-8") as file:
             file.write(video['description'])
 
+
 def geocode_address(address, api_key):
     """Geocode an address using Google Maps API."""
     gmaps = GoogleMaps(api_key)
@@ -60,6 +65,7 @@ def geocode_address(address, api_key):
         location = geocode_result[0]['geometry']['location']
         return location['lat'], location['lng']
     return None, None
+
 
 def create_map_with_meeting_types(address_dict, api_key):
     """
@@ -86,6 +92,22 @@ def create_map_with_meeting_types(address_dict, api_key):
 
     return m
 
+
+def fetch_real_video_details(channel_url):
+    """Fetches video details from a YouTube channel."""
+    channel = Channel(channel_url)
+    video_details = []
+
+    for video in channel.videos:
+        video_details.append({
+            "video_id": video.video_id,
+            "title": video.title,
+            "description": video.description
+        })
+
+    return video_details
+
+
 def main():
     # Fetch the API key from the environment
     api_key = os.getenv("GOOGLE_API_KEY")
@@ -93,21 +115,13 @@ def main():
         raise ValueError("GOOGLE_API_KEY environment variable is not set")
 
     # Replace with your file hosting base URL
-    base_file_url = "https://your-file-hosting-service.com/descriptions"
+    base_file_url = "https://github.com/alcho456/fortville-scraper/tree/main/descriptions"
 
-    # Fetch video details dynamically (or use static data for testing)
-    video_details = [
-        {
-            "video_id": "abc123",
-            "title": "11/26/25 - Fortville Plan Commission",
-            "description": "Meeting agenda for Fortville Plan Commission. Address: 123 W Main St."
-        },
-        {
-            "video_id": "def456",
-            "title": "12/15/25 - Fortville Town Council",
-            "description": "Meeting agenda for Fortville Town Council. Address: 1500 W 1000 N."
-        }
-    ]
+    # Replace with your YouTube channel URL
+    channel_url = "https://www.youtube.com/@townoffortville1865/videos"
+
+    # Fetch real video details
+    video_details = fetch_real_video_details(channel_url)
 
     # Save descriptions to files
     save_descriptions_to_files(video_details)
@@ -121,6 +135,7 @@ def main():
     # Save the map to an HTML file
     meeting_map.save("index.html")
     print("Map created and saved as index.html")
+
 
 if __name__ == "__main__":
     main()
