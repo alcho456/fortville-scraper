@@ -119,7 +119,7 @@ def main():
     meeting_map = create_map_with_meeting_types(address_dict, api_key)
 
     # Save the map to an HTML file
-    meeting_map.save("map_with_meetings.html")
+    meeting_map.save("index.html")
     print("Map created and saved as map_with_meetings.html")
 
 if __name__ == "__main__":
