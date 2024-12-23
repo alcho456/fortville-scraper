@@ -4,7 +4,6 @@ import folium
 from googlemaps import Client as GoogleMaps
 import yt_dlp
 
-
 def extract_meeting_details(title):
     """
     Extracts the meeting date and type from the title.
@@ -93,8 +92,8 @@ def create_map_with_meeting_types(address_dict, api_key):
     return m
 
 
-def fetch_all_videos_from_channel(channel_url):
-    """Fetch all video details from a YouTube channel, handling pagination."""
+def fetch_videos_from_videos_tab(channel_url):
+    """Fetch all video details from the YouTube Videos tab of a channel."""
     ydl_opts = {
         'quiet': False,  # Enable output for debugging
         'extract_flat': True,  # Get only video metadata without downloading videos
@@ -108,16 +107,23 @@ def fetch_all_videos_from_channel(channel_url):
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        # Download the channel's video metadata
+        # Extract video metadata from the "Videos" tab
         result = ydl.extract_info(channel_url, download=False)
+        
         if 'entries' in result:
             video_details = []
             for video in result['entries']:
+                # Log video details for debugging
+                print(f"Video ID: {video['id']}")
+                print(f"Title: {video['title']}")
+                print(f"Description: {video.get('description', 'No description available')}")
+                
                 video_details.append({
                     "video_id": video['id'],
                     "title": video['title'],
                     "description": video.get('description', '')
                 })
+            
             print(f"Fetched {len(video_details)} videos.")  # Debugging line to check number of videos fetched
             return video_details
         else:
@@ -134,11 +140,11 @@ def main():
     # Replace with your file hosting base URL
     base_file_url = "https://github.com/alcho456/fortville-scraper/tree/main/descriptions"
 
-    # Replace with your YouTube channel URL
-    channel_url = "https://www.youtube.com/channel/UCg4jC3F2rZropkP0rIH241w"
+    # Replace with your YouTube channel URL (Videos tab)
+    channel_url = "https://www.youtube.com/channel/UCg4jC3F2rZropkP0rIH241w/videos"
 
-    # Fetch all video details
-    video_details = fetch_all_videos_from_channel(channel_url)
+    # Fetch video details from the Videos tab
+    video_details = fetch_videos_from_videos_tab(channel_url)
 
     # Save descriptions to files
     save_descriptions_to_files(video_details)
