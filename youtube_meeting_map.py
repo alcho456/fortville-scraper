@@ -2,7 +2,6 @@ import os
 import re
 import folium
 from googlemaps import Client as GoogleMaps
-from pytube import Channel
 
 def extract_meeting_details(title):
     """
@@ -88,16 +87,15 @@ def create_map_with_meeting_types(address_dict, api_key):
     return m
 
 def main():
-    # Replace with your YouTube channel ID
-    channel_url = "https://www.youtube.com/c/YourChannelName/videos"
-
-    # Replace with your Google Maps API key
-    api_key = "YOUR_GOOGLE_API_KEY"
+    # Fetch the API key from the environment
+    api_key = os.getenv("GOOGLE_API_KEY")
+    if not api_key:
+        raise ValueError("GOOGLE_API_KEY environment variable is not set")
 
     # Replace with your file hosting base URL
     base_file_url = "https://your-file-hosting-service.com/descriptions"
 
-    # Fetch video details (you'll need to implement this based on your requirements)
+    # Fetch video details dynamically (or use static data for testing)
     video_details = [
         {
             "video_id": "abc123",
@@ -122,6 +120,7 @@ def main():
 
     # Save the map to an HTML file
     meeting_map.save("map_with_meetings.html")
+    print("Map created and saved as map_with_meetings.html")
 
 if __name__ == "__main__":
     main()
