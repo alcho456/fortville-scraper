@@ -26,8 +26,17 @@ jobs:
 
       - name: Decode cookies from GitHub secret
         run: |
+          if [ -z "$YOUTUBE_COOKIES" ]; then
+            echo "Error: YOUTUBE_COOKIES secret is not set or empty."
+            exit 1
+          fi
           echo "$YOUTUBE_COOKIES" | base64 --decode > YOUTUBE_COOKIES.txt
 
+      - name: Debug Cookies File
+        run: |
+          echo "Contents of YOUTUBE_COOKIES.txt:"
+          cat YOUTUBE_COOKIES.txt
+          
       - name: Verify cookies file
         run: |
           if [ ! -s YOUTUBE_COOKIES.txt ]; then
