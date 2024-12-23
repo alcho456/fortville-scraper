@@ -32,6 +32,9 @@ def group_videos_with_short_addresses(video_details, base_file_url):
         title = video['title']
         date, meeting_type = extract_meeting_details(title)
         addresses = re.findall(address_pattern, video['description'])
+        
+        print(f"Processing video: {title}")
+        print(f"Addresses found: {addresses}")  # Debugging print
 
         for address in addresses:
             if address not in address_dict:
@@ -44,6 +47,7 @@ def group_videos_with_short_addresses(video_details, base_file_url):
                 "description": video['description']
             })
 
+    print(f"Grouped addresses: {address_dict}")  # Debugging print
     return address_dict
 
 
@@ -55,6 +59,7 @@ def save_descriptions_to_files(video_details, output_dir="descriptions"):
         file_path = os.path.join(output_dir, f"{video['video_id']}.txt")
         with open(file_path, "w", encoding="utf-8") as file:
             file.write(video['description'])
+        print(f"Saving description for video ID {video['video_id']} to {file_path}")  # Debugging print
 
 
 def geocode_address(address, api_key):
@@ -64,6 +69,7 @@ def geocode_address(address, api_key):
     if geocode_result:
         location = geocode_result[0]['geometry']['location']
         return location['lat'], location['lng']
+    print(f"Failed to geocode address: {address}")  # Debugging print
     return None, None
 
 
@@ -95,6 +101,7 @@ def create_map_with_meeting_types(address_dict, api_key):
 
 def fetch_real_video_details(channel_url):
     """Fetches video details from a YouTube channel."""
+    print(f"Fetching video details from: {channel_url}")
     channel = Channel(channel_url)
     video_details = []
 
@@ -105,6 +112,7 @@ def fetch_real_video_details(channel_url):
             "description": video.description
         })
 
+    print(f"Fetched {len(video_details)} videos.")
     return video_details
 
 
@@ -113,6 +121,8 @@ def main():
     api_key = os.getenv("GOOGLE_API_KEY")
     if not api_key:
         raise ValueError("GOOGLE_API_KEY environment variable is not set")
+
+    print(f"API Key loaded successfully.")  # Debugging print
 
     # Replace with your file hosting base URL
     base_file_url = "https://github.com/alcho456/fortville-scraper/tree/main/descriptions"
