@@ -2,6 +2,7 @@ import os
 import re
 import folium
 import yt_dlp
+import base64
 from googlemaps import Client as GoogleMaps
 
 
@@ -122,11 +123,27 @@ def fetch_real_video_details(channel_url, cookie_file):
     return video_details
 
 
+def decode_base64_to_file(base64_data, output_file):
+    """Decode a Base64 string and write it to a file."""
+    decoded_data = base64.b64decode(base64_data)
+    with open(output_file, "wb") as file:
+        file.write(decoded_data)
+
+
 def main():
     # Fetch the API key from the environment
     api_key = os.getenv("GOOGLE_API_KEY")
     if not api_key:
         raise ValueError("GOOGLE_API_KEY environment variable is not set")
+
+    # Fetch the Base64 encoded YouTube cookies from GitHub secrets
+    youtube_cookies_base64 = os.getenv("YOUTUBE_COOKIES")
+    if not youtube_cookies_base64:
+        raise ValueError("YOUTUBE_COOKIES secret is not set")
+
+    # Decode the Base64 encoded cookies and save to a file
+    cookie_file = "cookies.txt"
+    decode_base64_to_file(youtube_cookies_base64, cookie_file)
 
     # Replace with your file hosting base URL
     base_file_url = "https://github.com/alcho456/fortville-scraper/tree/main/descriptions"
@@ -135,7 +152,6 @@ def main():
     channel_url = "https://www.youtube.com/channel/UCg4jC3F2rZropkP0rIH241w"
 
     # Fetch real video details
-    cookie_file = "cookies.txt"  # Make sure to have your cookies file
     video_details = fetch_real_video_details(channel_url, cookie_file)
 
     # Save descriptions to files
