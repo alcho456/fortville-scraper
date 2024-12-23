@@ -1,8 +1,8 @@
 import os
 import re
 import folium
-import yt_dlp
 from googlemaps import Client as GoogleMaps
+import yt_dlp
 
 
 def extract_meeting_details(title):
@@ -32,9 +32,6 @@ def group_videos_with_short_addresses(video_details, base_file_url):
         title = video['title']
         date, meeting_type = extract_meeting_details(title)
         addresses = re.findall(address_pattern, video['description'])
-        
-        print(f"Processing video: {title}")
-        print(f"Addresses found: {addresses}")  # Debugging print
 
         for address in addresses:
             if address not in address_dict:
@@ -47,7 +44,6 @@ def group_videos_with_short_addresses(video_details, base_file_url):
                 "description": video['description']
             })
 
-    print(f"Grouped addresses: {address_dict}")  # Debugging print
     return address_dict
 
 
@@ -59,7 +55,6 @@ def save_descriptions_to_files(video_details, output_dir="descriptions"):
         file_path = os.path.join(output_dir, f"{video['video_id']}.txt")
         with open(file_path, "w", encoding="utf-8") as file:
             file.write(video['description'])
-        print(f"Saving description for video ID {video['video_id']} to {file_path}")  # Debugging print
 
 
 def geocode_address(address, api_key):
@@ -69,7 +64,6 @@ def geocode_address(address, api_key):
     if geocode_result:
         location = geocode_result[0]['geometry']['location']
         return location['lat'], location['lng']
-    print(f"Failed to geocode address: {address}")  # Debugging print
     return None, None
 
 
@@ -99,29 +93,31 @@ def create_map_with_meeting_types(address_dict, api_key):
     return m
 
 
-def fetch_real_video_details(channel_url):
-    """Fetches video details from a YouTube channel using yt-dlp."""
-    print(f"Fetching video details from: {channel_url}")
+def fetch_all_videos_from_channel(channel_url):
+    """Fetch all video details from a YouTube channel, handling pagination."""
     ydl_opts = {
-        'quiet': True,
-        'extract_flat': True,  # To just get video metadata, no need to download the videos
-        'force_generic_extractor': True
+        'quiet': True,  # Suppress output for cleaner logs
+        'extract_flat': True,  # Get only video metadata without downloading videos
+        'force_generic_extractor': True,  # Use a more general extractor to bypass some issues
+        'playlistend': 1000,  # This forces it to fetch the first 1000 videos (adjust as needed)
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        # Download the channel's video metadata
         result = ydl.extract_info(channel_url, download=False)
-        video_details = []
-
         if 'entries' in result:
+            video_details = []
             for video in result['entries']:
                 video_details.append({
                     "video_id": video['id'],
                     "title": video['title'],
                     "description": video.get('description', '')
                 })
-
-        print(f"Fetched {len(video_details)} videos.")
-        return video_details
+            print(f"Fetched {len(video_details)} videos.")
+            return video_details
+        else:
+            print("No videos found.")
+            return []
 
 
 def main():
@@ -130,16 +126,14 @@ def main():
     if not api_key:
         raise ValueError("GOOGLE_API_KEY environment variable is not set")
 
-    print(f"API Key loaded successfully.")  # Debugging print
-
     # Replace with your file hosting base URL
     base_file_url = "https://github.com/alcho456/fortville-scraper/tree/main/descriptions"
 
     # Replace with your YouTube channel URL
     channel_url = "https://www.youtube.com/channel/UCg4jC3F2rZropkP0rIH241w"
 
-    # Fetch real video details
-    video_details = fetch_real_video_details(channel_url)
+    # Fetch all video details
+    video_details = fetch_all_videos_from_channel(channel_url)
 
     # Save descriptions to files
     save_descriptions_to_files(video_details)
