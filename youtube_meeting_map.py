@@ -1,8 +1,8 @@
 import os
 import re
 import folium
+import yt_dlp
 from googlemaps import Client as GoogleMaps
-from pytube import Channel
 
 
 def extract_meeting_details(title):
@@ -100,20 +100,28 @@ def create_map_with_meeting_types(address_dict, api_key):
 
 
 def fetch_real_video_details(channel_url):
-    """Fetches video details from a YouTube channel."""
+    """Fetches video details from a YouTube channel using yt-dlp."""
     print(f"Fetching video details from: {channel_url}")
-    channel = Channel(channel_url)
-    video_details = []
+    ydl_opts = {
+        'quiet': True,
+        'extract_flat': True,  # To just get video metadata, no need to download the videos
+        'force_generic_extractor': True
+    }
 
-    for video in channel.videos:
-        video_details.append({
-            "video_id": video.video_id,
-            "title": video.title,
-            "description": video.description
-        })
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        result = ydl.extract_info(channel_url, download=False)
+        video_details = []
 
-    print(f"Fetched {len(video_details)} videos.")
-    return video_details
+        if 'entries' in result:
+            for video in result['entries']:
+                video_details.append({
+                    "video_id": video['id'],
+                    "title": video['title'],
+                    "description": video.get('description', '')
+                })
+
+        print(f"Fetched {len(video_details)} videos.")
+        return video_details
 
 
 def main():
