@@ -118,7 +118,7 @@ def main():
     base_file_url = "https://github.com/alcho456/fortville-scraper/tree/main/descriptions"
 
     # Replace with your YouTube channel URL
-    channel_url = "https://www.youtube.com/channel/UCg4jC3F2rZropkP0rIH241w/videos"
+    channel_url = "https://www.youtube.com/channel/UCg4jC3F2rZropkP0rIH241w"
 
     # Fetch real video details
     video_details = fetch_real_video_details(channel_url)
