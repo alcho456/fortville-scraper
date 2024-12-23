@@ -88,25 +88,41 @@ def create_map_with_meeting_types(address_dict, api_key):
     return m
 
 
-def fetch_real_video_details(channel_url, cookie_file):
-    """Fetch video details using yt-dlp."""
+def fetch_real_video_details(channel_url):
+    """
+    Fetches video details from a YouTube channel using yt-dlp and authentication via username and password.
+    """
+    # Fetch YouTube credentials from environment variables (set in GitHub Secrets)
+    yt_username = os.getenv('YT_USERNAME')
+    yt_password = os.getenv('YT_PASSWORD')
+
+    # If credentials are not found, raise an error
+    if not yt_username or not yt_password:
+        raise ValueError("YT_USERNAME or YT_PASSWORD environment variable is missing")
+
+    # yt-dlp options with username and password
     ydl_opts = {
         'quiet': True,
-        'extract_flat': False,
+        'extract_flat': False,  # We want the actual video details
         'force_generic_extractor': True,
         'no_warnings': True,
-        'cookies': cookie_file,
+        'username': yt_username,
+        'password': yt_password,
     }
 
-    try:
-        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        try:
             result = ydl.extract_info(channel_url, download=False)
-            videos = result.get('entries', [])
-    except Exception as e:
-        print(f"Error fetching video details: {e}")
-        return []
+            if 'entries' in result:
+                videos = result['entries']
+            else:
+                videos = []
+        except Exception as e:
+            print(f"Error fetching video details: {e}")
+            return []
 
     video_details = []
+
     for video in videos:
         if 'description' in video:
             video_details.append({
