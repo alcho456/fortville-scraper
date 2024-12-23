@@ -2,7 +2,8 @@ import os
 import re
 import folium
 from googlemaps import Client as GoogleMaps
-import yt_dlp
+from pytube import Channel
+
 
 def extract_meeting_details(title):
     """
@@ -92,43 +93,19 @@ def create_map_with_meeting_types(address_dict, api_key):
     return m
 
 
-def fetch_videos_from_videos_tab(channel_url):
-    """Fetch all video details from the YouTube Videos tab of a channel."""
-    ydl_opts = {
-        'quiet': False,  # Enable output for debugging
-        'extract_flat': True,  # Get only video metadata without downloading videos
-        'force_generic_extractor': True,  # Use a more general extractor to bypass some issues
-        'playlistend': 1000,  # Fetch up to 1000 videos (adjust as needed)
-        'extractor_args': {
-            'youtube': {
-                'max_videos': 1000,  # Fetch a maximum of 1000 videos
-            },
-        }
-    }
+def fetch_real_video_details(channel_url):
+    """Fetches video details from a YouTube channel."""
+    channel = Channel(channel_url)
+    video_details = []
 
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        # Extract video metadata from the "Videos" tab
-        result = ydl.extract_info(channel_url, download=False)
-        
-        if 'entries' in result:
-            video_details = []
-            for video in result['entries']:
-                # Log video details for debugging
-                print(f"Video ID: {video['id']}")
-                print(f"Title: {video['title']}")
-                print(f"Description: {video.get('description', 'No description available')}")
-                
-                video_details.append({
-                    "video_id": video['id'],
-                    "title": video['title'],
-                    "description": video.get('description', '')
-                })
-            
-            print(f"Fetched {len(video_details)} videos.")  # Debugging line to check number of videos fetched
-            return video_details
-        else:
-            print("No videos found.")
-            return []
+    for video in channel.videos:
+        video_details.append({
+            "video_id": video.video_id,
+            "title": video.title,
+            "description": video.description
+        })
+
+    return video_details
 
 
 def main():
@@ -140,11 +117,11 @@ def main():
     # Replace with your file hosting base URL
     base_file_url = "https://github.com/alcho456/fortville-scraper/tree/main/descriptions"
 
-    # Replace with your YouTube channel URL (Videos tab)
-    channel_url = "https://www.youtube.com/channel/UCg4jC3F2rZropkP0rIH241w/videos"
+    # Replace with your YouTube channel URL
+    channel_url = "https://www.youtube.com/channel/UCg4jC3F2rZropkP0rIH241w"
 
-    # Fetch video details from the Videos tab
-    video_details = fetch_videos_from_videos_tab(channel_url)
+    # Fetch real video details
+    video_details = fetch_real_video_details(channel_url)
 
     # Save descriptions to files
     save_descriptions_to_files(video_details)
