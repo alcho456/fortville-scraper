@@ -120,7 +120,7 @@ def main():
 
     # Save the map to an HTML file
     meeting_map.save("index.html")
-    print("Map created and saved as map_with_meetings.html")
+    print("Map created and saved as index.html")
 
 if __name__ == "__main__":
     main()
