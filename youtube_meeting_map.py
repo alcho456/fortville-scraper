@@ -134,29 +134,10 @@ def fetch_real_video_details(channel_url):
     return video_details
 
 
-def decode_base64_to_file(base64_data, output_file):
-    """Decode a Base64 string and write it to a file."""
-    try:
-        decoded_data = base64.b64decode(base64_data)
-        with open(output_file, "wb") as file:
-            file.write(decoded_data)
-    except Exception as e:
-        raise ValueError(f"Failed to decode Base64 data: {e}")
-
-
 def main():
     api_key = os.getenv("GOOGLE_API_KEY")
     if not api_key:
         raise ValueError("GOOGLE_API_KEY environment variable is not set")
-
-    # Ensure the YouTube cookies secret is set
-    youtube_cookies_base64 = os.getenv("YOUTUBE_COOKIES")
-    if not youtube_cookies_base64:
-        raise ValueError("YOUTUBE_COOKIES secret is not set")
-
-    # Decode the cookies file
-    cookie_file = "cookies.txt"
-    decode_base64_to_file(youtube_cookies_base64, cookie_file)
 
     base_file_url = "https://github.com/alcho456/fortville-scraper/tree/main/descriptions"
     channel_url = "https://www.youtube.com/channel/UCg4jC3F2rZropkP0rIH241w"
