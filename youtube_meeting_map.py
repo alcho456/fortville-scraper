@@ -135,7 +135,8 @@ def main():
     channel_url = "https://www.youtube.com/channel/UCg4jC3F2rZropkP0rIH241w"
 
     # Fetch real video details
-    video_details = fetch_real_video_details(channel_url)
+    cookie_file = "cookies.txt"  # Make sure to have your cookies file
+    video_details = fetch_real_video_details(channel_url, cookie_file)
 
     # Save descriptions to files
     save_descriptions_to_files(video_details)
