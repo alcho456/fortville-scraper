@@ -93,18 +93,17 @@ def create_map_with_meeting_types(address_dict, api_key):
     return m
 
 
-def fetch_real_video_details(channel_url):
-    """Fetches video details from a YouTube channel's 'Videos' tab."""
+def fetch_real_video_details(channel_url, cookie_file):
     ydl_opts = {
         'quiet': True,
-        'extract_flat': False,  # Ensure that we get full video details, not just URLs
+        'extract_flat': False,
         'force_generic_extractor': True,
         'no_warnings': True,
+        'cookies': cookie_file,  # Pass the cookies here
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         result = ydl.extract_info(channel_url, download=False)
-        # Ensure we're only fetching videos, not the channel's "About" section or playlists
         if 'entries' in result:
             videos = result['entries']
         else:
@@ -113,7 +112,6 @@ def fetch_real_video_details(channel_url):
     video_details = []
 
     for video in videos:
-        # Only include videos with a description (we're skipping playlists, etc.)
         if 'description' in video:
             video_details.append({
                 "video_id": video['id'],
