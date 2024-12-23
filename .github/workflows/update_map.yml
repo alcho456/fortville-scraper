@@ -24,33 +24,14 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Verify YOUTUBE_COOKIES Secret
-        run: |
-          if [ -z "$YOUTUBE_COOKIES" ]; then
-            echo "Error: YOUTUBE_COOKIES secret is not set or empty."
-            exit 1
-          else
-            echo "YOUTUBE_COOKIES secret is set."
-          fi
-        env:
-          YOUTUBE_COOKIES: ${{ secrets.YOUTUBE_COOKIES }}
-
-      - name: Decode cookies from GitHub secret
-        run: |
-          echo "$YOUTUBE_COOKIES" | base64 --decode > YOUTUBE_COOKIES.txt
-
-      - name: Debug Cookies File
-        run: |
-          echo "Checking YOUTUBE_COOKIES.txt content..."
-          cat YOUTUBE_COOKIES.txt
-
-      - name: Run YouTube Scraper
+      - name: Run YouTube Scraper with Username and Password
         run: |
           python youtube_meeting_map.py
         env:
-          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
-          YOUTUBE_COOKIES: ${{ secrets.YOUTUBE_COOKIES }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}  # Make sure your API key is set as a secret
+          YT_USERNAME: ${{ secrets.YT_USERNAME }}  # Pass username secret
+          YT_PASSWORD: ${{ secrets.YT_PASSWORD }}  # Pass password secret
 
       - name: Clean up
         run: |
-          rm YOUTUBE_COOKIES.txt  # Optional cleanup
+          rm -f YOUTUBE_COOKIES.txt  # Optional: Clean up after the job finishes
