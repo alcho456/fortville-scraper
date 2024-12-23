@@ -1,7 +1,7 @@
 import os
 import re
 import folium
-import yt_dlp as ytdlp
+import yt_dlp
 from googlemaps import Client as GoogleMaps
 
 
@@ -94,22 +94,32 @@ def create_map_with_meeting_types(address_dict, api_key):
 
 
 def fetch_real_video_details(channel_url):
-    """Fetches video details from a YouTube channel using yt-dlp."""
+    """Fetches video details from a YouTube channel's 'Videos' tab."""
     ydl_opts = {
-        'extract_flat': True,  # Only get video information, not the video itself
-        'force_generic_extractor': True,  # Use generic extractor for YouTube channels
+        'quiet': True,
+        'extract_flat': False,  # Ensure that we get full video details, not just URLs
+        'force_generic_extractor': True,
+        'no_warnings': True,
     }
 
+    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+        result = ydl.extract_info(channel_url, download=False)
+        # Ensure we're only fetching videos, not the channel's "About" section or playlists
+        if 'entries' in result:
+            videos = result['entries']
+        else:
+            videos = []
+
     video_details = []
-    with ytdlp.YoutubeDL(ydl_opts) as ydl:
-        info_dict = ydl.extract_info(channel_url, download=False)
-        if 'entries' in info_dict:
-            for video in info_dict['entries']:
-                video_details.append({
-                    "video_id": video['id'],
-                    "title": video['title'],
-                    "description": video['description'] or ""  # Ensure description exists
-                })
+
+    for video in videos:
+        # Only include videos with a description (we're skipping playlists, etc.)
+        if 'description' in video:
+            video_details.append({
+                "video_id": video['id'],
+                "title": video['title'],
+                "description": video.get('description', '')
+            })
 
     return video_details
 
@@ -123,10 +133,10 @@ def main():
     # Replace with your file hosting base URL
     base_file_url = "https://github.com/alcho456/fortville-scraper/tree/main/descriptions"
 
-    # Replace with your correct YouTube channel URL
-    channel_url = "https://www.youtube.com/channel/UCg4jC3F2rZropkP0rIH241w"  # Corrected URL
+    # Replace with your YouTube channel URL
+    channel_url = "https://www.youtube.com/channel/UCg4jC3F2rZropkP0rIH241w"
 
-    # Fetch real video details using yt-dlp
+    # Fetch real video details
     video_details = fetch_real_video_details(channel_url)
 
     # Save descriptions to files
