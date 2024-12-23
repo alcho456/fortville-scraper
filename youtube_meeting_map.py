@@ -96,10 +96,15 @@ def create_map_with_meeting_types(address_dict, api_key):
 def fetch_all_videos_from_channel(channel_url):
     """Fetch all video details from a YouTube channel, handling pagination."""
     ydl_opts = {
-        'quiet': True,  # Suppress output for cleaner logs
+        'quiet': False,  # Enable output for debugging
         'extract_flat': True,  # Get only video metadata without downloading videos
         'force_generic_extractor': True,  # Use a more general extractor to bypass some issues
-        'playlistend': 1000,  # This forces it to fetch the first 1000 videos (adjust as needed)
+        'playlistend': 1000,  # Fetch up to 1000 videos (adjust as needed)
+        'extractor_args': {
+            'youtube': {
+                'max_videos': 1000,  # Fetch a maximum of 1000 videos
+            },
+        }
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -113,7 +118,7 @@ def fetch_all_videos_from_channel(channel_url):
                     "title": video['title'],
                     "description": video.get('description', '')
                 })
-            print(f"Fetched {len(video_details)} videos.")
+            print(f"Fetched {len(video_details)} videos.")  # Debugging line to check number of videos fetched
             return video_details
         else:
             print("No videos found.")
