@@ -1,8 +1,8 @@
 import os
 import re
 import folium
+import yt_dlp as ytdlp
 from googlemaps import Client as GoogleMaps
-from pytube import Channel
 
 
 def extract_meeting_details(title):
@@ -94,16 +94,22 @@ def create_map_with_meeting_types(address_dict, api_key):
 
 
 def fetch_real_video_details(channel_url):
-    """Fetches video details from a YouTube channel."""
-    channel = Channel(channel_url)
-    video_details = []
+    """Fetches video details from a YouTube channel using yt-dlp."""
+    ydl_opts = {
+        'extract_flat': True,  # Only get video information, not the video itself
+        'force_generic_extractor': True,  # Use generic extractor for YouTube channels
+    }
 
-    for video in channel.videos:
-        video_details.append({
-            "video_id": video.video_id,
-            "title": video.title,
-            "description": video.description
-        })
+    video_details = []
+    with ytdlp.YoutubeDL(ydl_opts) as ydl:
+        info_dict = ydl.extract_info(channel_url, download=False)
+        if 'entries' in info_dict:
+            for video in info_dict['entries']:
+                video_details.append({
+                    "video_id": video['id'],
+                    "title": video['title'],
+                    "description": video['description'] or ""  # Ensure description exists
+                })
 
     return video_details
 
@@ -117,10 +123,10 @@ def main():
     # Replace with your file hosting base URL
     base_file_url = "https://github.com/alcho456/fortville-scraper/tree/main/descriptions"
 
-    # Replace with your YouTube channel URL
-    channel_url = "https://www.youtube.com/channel/UCg4jC3F2rZropkP0rIH241w"
+    # Replace with your correct YouTube channel URL
+    channel_url = "https://www.youtube.com/channel/UCg4jC3F2rZropkP0rIH241w"  # Corrected URL
 
-    # Fetch real video details
+    # Fetch real video details using yt-dlp
     video_details = fetch_real_video_details(channel_url)
 
     # Save descriptions to files
