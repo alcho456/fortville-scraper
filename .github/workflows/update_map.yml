@@ -1,4 +1,4 @@
-name: YouTube Meeting Map
+name: Run YouTube Scraper
 
 on:
   push:
@@ -6,33 +6,27 @@ on:
       - main
 
 jobs:
-  youtube-meeting-map:
+  scrape:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
-    - name: Set up Python
-      uses: actions/setup-python@v3
-      with:
-        python-version: '3.10'
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.10'
 
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install yt-dlp
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
 
-    - name: Decode cookies file from GitHub Secrets
-      run: |
-        echo "${{ secrets.YOUTUBE_COOKIES }}" | base64 --decode > cookies.txt
+      - name: Set up environment variables
+        run: |
+          echo "GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }}" >> $GITHUB_ENV
+          echo "YOUTUBE_COOKIES=${{ secrets.YOUTUBE_COOKIES }}" >> $GITHUB_ENV
 
-    - name: Run YouTube scraper
-      run: |
-        python youtube_meeting_map.py
-      env:
-        GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
-
-    - name: Clean up
-      run: rm cookies.txt
+      - name: Run the YouTube scraper
+        run: python youtube_meeting_map.py
