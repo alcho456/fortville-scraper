@@ -4,17 +4,18 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
-  scrape:
+  youtube_scraper:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set up Python
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: '3.10'
 
@@ -23,10 +24,17 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Set up environment variables
+      - name: Decode cookies from GitHub secret
         run: |
-          echo "GOOGLE_API_KEY=${{ secrets.GOOGLE_API_KEY }}" >> $GITHUB_ENV
-          echo "YOUTUBE_COOKIES=${{ secrets.YOUTUBE_COOKIES }}" >> $GITHUB_ENV
+          echo "$YOUTUBE_COOKIES" | base64 --decode > YOUTUBE_COOKIES.txt
 
-      - name: Run the YouTube scraper
-        run: python youtube_meeting_map.py
+      - name: Run YouTube Scraper
+        run: |
+          python youtube_meeting_map.py
+        env:
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}  # Make sure your API key is set as a secret
+          YOUTUBE_COOKIES: ${{ secrets.YOUTUBE_COOKIES }}
+
+      - name: Clean up
+        run: |
+          rm YOUTUBE_COOKIES.txt  # Optional: Clean up after the job finishes
